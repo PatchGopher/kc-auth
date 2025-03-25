@@ -9,10 +9,12 @@ import type { OAuth2Tokens } from "arctic";
 
 
 export async function GET(event: RequestEvent): Promise<Response> {
+	console.log("CALLBACK")
 	const code = event.url.searchParams.get("code");
 	const state = event.url.searchParams.get("state");
 	const storedState = event.cookies.get("keycloak_oauth_state") ?? null;
 	const codeVerifier = event.cookies.get("keycloak_code_verifier") ?? null;
+	console.log(code, state, storedState, codeVerifier)
 	if (code === null || state === null || storedState === null || codeVerifier === null) {
 		return new Response(null, {
 			status: 400
@@ -29,6 +31,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 		tokens = await keycloak.validateAuthorizationCode(code, codeVerifier);
 	} catch (e) {
 		// Invalid code or client credentials
+		console.log(e)
 		return new Response(null, {
 			status: 400
 		});
@@ -54,6 +57,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 
 	// TODO: Replace this with your own DB query.
 	const user = await createUser(keycloakUserId, username);
+	console.log("NEW USER", user)
 
 	const sessionToken = generateSessionToken();
 	const session = await createSession(sessionToken, user.id, tokens.accessToken());

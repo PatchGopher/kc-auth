@@ -5,7 +5,7 @@ const sql = postgres({
     database: 'app',
     user: 'postgres',
     password: 'postgres',
-    port: 5432
-}) 
+    port: 8300
+})
 
 export default sql

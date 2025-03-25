@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "8300:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -32,7 +32,7 @@ services:
       KC_HTTP_ENABLED: true
     command: start-dev
     ports:
-      - "8080:8080"
+      - "8400:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "5050:80"
+      - "8310:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:

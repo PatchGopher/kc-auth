@@ -47,6 +47,7 @@
 		"@oslojs/encoding": "^1.1.0",
 		"arctic": "^3.5.0",
 		"lucide-svelte": "^0.483.0",
-		"postgres": "^3.4.5"
+		"postgres": "^3.4.5",
+		"zod": "^3.24.2"
 	}
 }

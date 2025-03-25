@@ -4,6 +4,7 @@ import { keycloak } from "$lib/server/oauth";
 import type { RequestEvent } from "@sveltejs/kit";
 
 export async function GET(event: RequestEvent): Promise<Response> {
+	console.log("LOGIN")
 	const state = generateState();
 	const codeVerifier = generateCodeVerifier();
     const scopes = ["openid", "profile"];

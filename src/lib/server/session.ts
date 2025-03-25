@@ -50,7 +50,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		accessToken: row[0].access_token
 	};
 	const user: User = {
-		id: row[0].users_id,
+		id: row[0].user_id,
 		name: row[0].username,
 		keycloakId: row[0].keycloak_id
 	};
@@ -64,7 +64,6 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 			UPDATE sessions SET expires_at = ${session.expiresAt} WHERE id = ${session.id}
         `
 	}
-	console.log("CREATED:", session);
 	return { session, user };
 }
 
