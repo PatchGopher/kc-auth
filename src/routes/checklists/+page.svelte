@@ -1,6 +1,7 @@
 
 
 <script lang="ts">
+	import { enhance } from "$app/forms";
 	import type { PageProps } from "./$types";
 
 	let { data }: PageProps = $props();
@@ -12,8 +13,8 @@
 		<a href="/" class="text-blue-600 hover:underline"> Go back to home</a>
 	</div>
 	{#if data.can_create}
-		<form method="POST" action="?/create" class="flex gap-2">
-			<input name="name" type="text" placeholder="Add a new checklist" />
+		<form use:enhance method="POST" action="?/create" class="flex gap-2">
+			<input name="name" class=" bg-surface border-surface-b" type="text" placeholder="Add a new checklist" />
 
 			<button
 				type="submit"
@@ -31,15 +32,19 @@
 	{#if data.checklists.length === 0}
 		<p>No checklists found</p>
 	{:else}
-		<ul class="w-xl">
+		<ul class="max-w-xl divide-y-1 divide-surface-b">
 			{#each data.checklists as checklist (checklist.id)}
-				<li class="flex items-center gap-2 border-b border-gray-200 p-2 hover:bg-gray-100">
+				<li class="flex justify-between gap-6 p-2">
                     <a href="checklists/{checklist.id}">{checklist.name}</a>
-					<div class="flex-grow"></div>
-					<button
-						class=" border px-2 text-sm text-red-600 hover:cursor-pointer"
-						onclick={() => remove(checklist.id)}>Delete</button
-					>
+					<form use:enhance method="POST" action="?/delete" class="flex gap-2">
+						<input name="checklist_id" type="hidden" value={checklist.id} />
+						<button
+							type="submit"
+							class="hover:cursor-pointer hover:underline text-red-600"
+						>
+							Delete
+						</button>
+					</form>
 				</li>
 			{/each}
 		</ul>

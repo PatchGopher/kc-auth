@@ -47,7 +47,7 @@
 	{:else}
 		<ul class="w-xl">
 			{#each todos as todo (todo.id)}
-				<li class="flex items-center gap-2 border-b border-gray-200 p-2 hover:bg-gray-100">
+				<li class="flex items-center gap-2 border-b border-gray-200 p-2">
 					<input type="checkbox" onclick={() => complete(todo.id)} />
 					<span style="text-decoration: {todo.completed ? 'line-through' : 'none'}"
 						>{todo.text}</span

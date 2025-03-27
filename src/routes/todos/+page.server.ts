@@ -36,14 +36,6 @@ export const actions = {
 			};
 		}
 
-		// interface KeycloakResourceParams {
-		// 	id: string | null;
-		// 	name: string;
-		// 	type: string;
-		// 	owner: string;
-		// 	scopes: string[];
-		// }
-
 		console.log("CREATING IN DATABASE!")
 		const [row] = await sql`
 			INSERT INTO todos (text, completed)

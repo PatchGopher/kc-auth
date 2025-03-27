@@ -15,12 +15,14 @@ export function ensure(permissions: Permission[]) {
       return {
         resource: (resource: string) => {
           const permission = permissions.find(p => p.rsname === resource);
-            
+          console.log(permission)
           const hasAccess = Boolean(
             permission &&
             permission.scopes !== undefined &&
             permission.scopes.includes(scope)
           );
+
+          keycloak.refreshAccessToken
 
           return {
             error: (status: number = 403, message: string = `Access denied: Cannot ${scope} ${resource}`) => {

@@ -1,8 +1,10 @@
 import sql from "$lib/server/db";
 import { ensure } from "$lib/server/oauth";
+import type { User } from "$lib/server/session.js";
 import type { Checklist } from "$lib/types/checklist.js";
 import { error, type Actions } from "@sveltejs/kit";
 import { z } from "zod";
+import type { Member } from "./member";
 
 const LoadParamsSchema = z.object({
     id: z.string().nonempty("invalid_id")
@@ -31,6 +33,19 @@ export const load = async ({ params, locals }) => {
         SELECT id, text, completed FROM todos
         WHERE checklist_id = ${checklist_id}
     `;
+    const member_rows = await sql`
+        SELECT users_checklists.user_id, users.username, users_checklists.relation
+        FROM users_checklists
+        JOIN users ON users_checklists.user_id = users.id
+        WHERE checklist_id = ${checklist_id}
+    `
+    const potential_member_rows = await sql`
+        SELECT id, username FROM users
+        WHERE id NOT IN (
+            SELECT user_id FROM users_checklists
+            WHERE checklist_id = ${checklist_id}
+        )
+    `;
 
     const checklist: Checklist = {
         id: checklist_rows[0].id,
@@ -44,21 +59,38 @@ export const load = async ({ params, locals }) => {
         })
     };
 
+
+    const potential_members: Member[] = potential_member_rows.map(pmr => {
+        return {
+            id: pmr.id,
+            name: pmr.username,
+            relation: "none"
+        } as Member
+    })
+    const members: Member[] = member_rows.map(mr => {
+        return {
+            id: mr.user_id,
+            name: mr.username,
+            relation: mr.relation
+        } as Member
+    })
     return {
+        members: members,
+        potential_members: potential_members,
         checklist: checklist,
+        role: members.find(m => m.id == locals.user?.id),
         can_create: ensure(locals.permissions).can("create").resource("todos").result
     };
-
 }
 
 export const actions = {
-    create: async ({ locals, request }) => {
+    add_todo: async ({ locals, request, params }) => {
         ensure(locals.permissions).can("create").resource("todos");
 
         const data = await request.formData();
         const parsedData = CreateTodoSchema.safeParse({
             user_id: locals.user.id,
-            checklist_id: Number(data.get("checklist_id")),
+            checklist_id: Number(params.id),
             text: data.get("text")
         });
 
@@ -89,7 +121,7 @@ export const actions = {
         };
     },
 
-    complete: async ({ locals, request }) => {
+    complete_todo: async ({ locals, request }) => {
         ensure(locals.permissions).can("check").resource("todos").error();
 
         const data = await request.formData();
@@ -110,6 +142,68 @@ export const actions = {
                 completed: row.completed
             }
         };
+    },
+
+    add_member: async ({ locals, request, params }) => {
+        ensure(locals.permissions).can("create").resource("todos");
+
+        const data = await request.formData();
+        const checklist_id = Number(params.id)
+        const user_id = Number(data.get("user_id"))
+        const relation = "member"
+
+        console.log({checklist_id, user_id, relation})
+
+        const allowed_relations = ["owner"]
+        if(!await ensure_relationship(locals.user.id, checklist_id, allowed_relations)) {
+            throw error(403, `Insuficient relationship | You are neither of these: ${allowed_relations}`);
+        }
+
+        const [users_checklists_row] = await sql`
+            INSERT INTO users_checklists (user_id, checklist_id, relation)
+            VALUES (${user_id}, ${checklist_id}, ${relation})
+            ON CONFLICT DO NOTHING
+            RETURNING user_id, checklist_id, relation
+        `;
+
+        return {
+            status: 201,
+            body: {
+                user_id: users_checklists_row.user_id,
+                checklist_id: users_checklists_row.checklist_id,
+                relation: users_checklists_row.relation
+            }
+        };
+    },
+
+    expel_member: async ({ locals, request, params }) => {
+        ensure(locals.permissions).can("delete").resource("todos");
+
+        const data = await request.formData();
+        const checklist_id = params.id
+        console.log("CHECKLIST ID", checklist_id)
+        const user_id = Number(data.get("user_id"))
+
+        const allowed_relations = ["owner"]
+        if(!await ensure_relationship(locals.user.id, checklist_id, allowed_relations)) {
+            throw error(403, `Insuficient relationship | You are neither of these: ${allowed_relations}`);
+        }
+
+        console.log(user_id, checklist_id)
+
+        await sql`
+            DELETE FROM users_checklists
+            WHERE user_id = ${user_id}
+            AND checklist_id = ${checklist_id}
+        `;
+
+        return {
+            status: 204,
+            body: {
+                user_id: user_id,
+                checklist_id: checklist_id
+            }
+        };
     }
 } satisfies Actions;
 
@@ -119,6 +213,7 @@ const ensure_relationship = async (user_id: number, checklist_id: number, allowe
         WHERE user_id = ${user_id}
         AND checklist_id = ${checklist_id}
     `;
+    console.log(user_id, checklist_id, users_checklists_row, allowed)
     if (!users_checklists_row) return false 
     if (!users_checklists_row.relation) return false
     return allowed.includes(users_checklists_row.relation)

@@ -28,15 +28,15 @@ export async function createSession(sessionToken: string, userId: number, access
 export async function validateSessionToken(token: string): Promise<SessionValidationResult> {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
 	const row = await sql`
-		SELECT 
+		SELECT
 			sessions.id,
-			sessions.user_id, 
-			sessions.expires_at, 
+			sessions.user_id,
+			sessions.expires_at,
 			sessions.access_token,
-			users.username, 
-			users.keycloak_id 
-		FROM sessions 
-		INNER JOIN users ON users.id = sessions.user_id 
+			users.username,
+			users.keycloak_id
+		FROM sessions
+		INNER JOIN users ON users.id = sessions.user_id
 		WHERE sessions.id = ${sessionId}
     `
 	

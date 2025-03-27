@@ -44,6 +44,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		else
 			permissions = [];
 
+		console.log(permissions)
+
 		// permissions = [
 		// 	{
 		// 	  rsid: '929e1364-6b60-42ae-ab03-c705efc84d9c',
@@ -59,7 +61,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		// 	  rsid: 'ded27c23-f85d-436c-bfcb-e6fb00ceb4a0',
 		// 	  rsname: 'todos'
 		// 	}
-		//   ];
+		// ];
 
 	} else {
 		deleteSessionTokenCookie(event);

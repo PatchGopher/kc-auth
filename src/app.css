@@ -1,3 +1,10 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+
+@theme {
+    --color-ground: #171717;
+    --color-surface: #1b1b1b;
+    --color-surface-b: #333333;
+}
