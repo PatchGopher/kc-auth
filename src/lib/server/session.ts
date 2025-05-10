@@ -2,6 +2,8 @@ import sql from "./db.js";
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from "@oslojs/encoding";
 import { sha256 } from "@oslojs/crypto/sha2";
 import type { RequestEvent } from "@sveltejs/kit";
+import type { OAuth2Tokens } from "arctic";
+import { env } from "$env/dynamic/private";
 
 
 export function generateSessionToken(): string {
@@ -11,16 +13,19 @@ export function generateSessionToken(): string {
 	return token;
 }
 
-export async function createSession(sessionToken: string, userId: number, accessToken: string): Promise<Session> {
+export async function createSession(sessionToken: string, userId: number, tokens: OAuth2Tokens): Promise<Session> {
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(sessionToken)));
 	const session: Session = {
 		id: sessionId,
 		userId,
 		expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-		accessToken: accessToken
+		accessToken: tokens.accessToken(),
+		accessTokenExpiresAt: tokens.accessTokenExpiresAt(),
+		refreshToken: tokens.refreshToken()
 	};
 	await sql`
-		INSERT INTO sessions (id, user_id, expires_at, access_token) VALUES (${session.id}, ${session.userId}, ${session.expiresAt}, ${session.accessToken})
+		INSERT INTO sessions (id, user_id, expires_at, access_token, access_token_expires_at, refresh_token) 
+		VALUES (${session.id}, ${session.userId}, ${session.expiresAt}, ${session.accessToken}, ${session.accessTokenExpiresAt}, ${session.refreshToken})
     `
 	return session;
 }
@@ -33,13 +38,15 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 			sessions.user_id,
 			sessions.expires_at,
 			sessions.access_token,
+			sessions.access_token_expires_at,
+			sessions.refresh_token,
 			users.username,
 			users.keycloak_id
 		FROM sessions
 		INNER JOIN users ON users.id = sessions.user_id
 		WHERE sessions.id = ${sessionId}
     `
-	
+
 	if (row === null) {
 		return { session: null, user: null };
 	}
@@ -47,7 +54,9 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 		id: row[0].id,
 		userId: row[0].user_id,
 		expiresAt: row[0].expires_at,
-		accessToken: row[0].access_token
+		accessToken: row[0].access_token,
+		accessTokenExpiresAt: row[0].access_token_expires_at,
+		refreshToken: row[0].refresh_token,
 	};
 	const user: User = {
 		id: row[0].user_id,
@@ -84,11 +93,13 @@ export interface Session {
 	userId: number;
 	expiresAt: Date;
 	accessToken: string;
+	accessTokenExpiresAt: Date;
+	refreshToken: string;
 }
 
 export interface User {
 	id: number;
-    keycloakId: string;
+	keycloakId: string;
 	name: string;
 }
 
@@ -116,4 +127,23 @@ export function deleteSessionTokenCookie(event: RequestEvent): void {
 		maxAge: 0,
 		path: "/realms/apps/" // Adjust if Keycloak uses a different path
 	});
+}
+
+// get entraid token from keycloak
+// GET /realms/{realm-name}/broker/{provider_alias}/token HTTP/1.1
+// Host: localhost:8080
+// Authorization: Bearer <KEYCLOAK ACCESS TOKEN>
+
+export async function getEntraidToken(keycloakAccessToken: string): Promise<string> {
+	const response = await fetch(`${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/broker/microsoft-oidc/token`, {
+		method: "GET",
+		headers: {
+			"Authorization": `Bearer ${keycloakAccessToken}`
+		}
+	});
+	if (!response.ok) {
+		throw new Error(`Failed to get EntraID token: ${await response.text()}`);
+	}
+	const data = await response.json();
+	return data.access_token;
 }

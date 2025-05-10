@@ -64,5 +64,49 @@ export const actions = {
 				name: checklist_row.name
 			}
 		};
+	},
+	delete: async ({ locals, request }) => {
+		ensure(locals.permissions).can("delete").resource("checklists").error();
+
+		const data = await request.formData();
+		console.log("data", data);
+		const checklistId = data.get("checklist_id")?.toString();
+
+		if (!checklistId) {
+			throw error(400, "Invalid checklist ID");
+		}
+
+		// Check if the checklist's owner is the current user
+		const [checklist_row] = await sql`
+			SELECT id FROM checklists
+			WHERE id = ${checklistId}
+		`;
+		if (!checklist_row) {
+			throw error(404, "Checklist not found");
+		}
+		const [relation_row] = await sql`
+			SELECT relation FROM users_checklists
+			WHERE user_id = ${locals.user.id}
+			AND checklist_id = ${checklistId}
+		`;
+		console.log("relation_row", locals.user.id, checklistId, relation_row);
+		if (!relation_row) {
+			throw error(403, "You do not have permission to delete this checklist due to missing relation");
+		}
+		if (relation_row.relation !== 'owner') {
+			throw error(403, "You do not have permission to delete this checklist due to missing owner relation");
+		}
+
+		await sql`
+			DELETE FROM checklists
+			WHERE id = ${checklistId}
+		`;
+
+		return {
+			status: 200,
+			body: {
+				message: "Checklist deleted successfully"
+			}
+		};
 	}
 } satisfies Actions;

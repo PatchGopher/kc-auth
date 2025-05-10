@@ -4,7 +4,7 @@
 	let { member }: { member: Member } = $props();
 </script>
 
-<li class="flex gap-2 border-b border-gray-200 p-2">
+<li class="flex gap-2 py-2">
 	
 	<span>{member.name}</span>
     <span

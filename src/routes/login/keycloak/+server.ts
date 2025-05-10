@@ -7,7 +7,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 	console.log("LOGIN")
 	const state = generateState();
 	const codeVerifier = generateCodeVerifier();
-    const scopes = ["openid", "profile"];
+    const scopes = ["openid", "profile", "User.Read", "https://management.azure.com/user_impersonation"];
     const url = keycloak.createAuthorizationURL(state, codeVerifier, scopes);
 
 	event.cookies.set("keycloak_oauth_state", state, {

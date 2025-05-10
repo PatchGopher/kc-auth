@@ -30,6 +30,9 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_HOSTNAME_STRICT: false
       KC_HTTP_ENABLED: true
+      # enable token exchange
+      KC_FEATURES: preview,token-exchange
+      JAVA_TOOL_OPTIONS: "-Dkeycloak.profile.feature.admin_fine_grained_authz=enabled -Dkeycloak.profile.feature.token_exchange=enabled"
     command: start-dev
     ports:
       - "8400:8080"

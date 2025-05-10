@@ -23,7 +23,7 @@
 <div class="space-y-2 p-4">
 	<div class="flex items-end gap-4">
 		<h1 class="text-xl">Todo List</h1>
-		<a href="/" class="text-blue-600 hover:underline"> Go back to home</a>
+		<a href="/" class="hover:underline"> Go back to home</a>
 	</div>
 	{#if data.can_create}
 		<form method="POST" action="?/create" class="flex gap-2">
@@ -31,7 +31,7 @@
 
 			<button
 				type="submit"
-				class="border px-4 hover:cursor-pointer hover:border-blue-600 hover:text-blue-600"
+				class="border px-4 hover:cursor-pointer hover:border-neutral-600 hover:text-white"
 			>
 				Add Todo
 			</button>
@@ -39,7 +39,7 @@
 	{:else}
 		<p class=""> 
 			You don't have permission to create todos |
-			<a href="/login/keycloak" class="text-blue-600 hover:underline">Request Permission</a>
+			<a href="/login/keycloak" class="hover:underline">Request Permission</a>
 		</p>
 	{/if}
 	{#if todos.length === 0}

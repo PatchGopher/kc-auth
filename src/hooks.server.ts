@@ -1,3 +1,4 @@
+import { env } from "$env/dynamic/private";
 import type { Permission } from "$lib/server/oauth";
 import {
 	validateSessionToken,
@@ -21,7 +22,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	let permissions: Permission[] = [];
 	if (session !== null) {
 		const response = await fetch(
-			`http://localhost:8400/realms/apps/protocol/openid-connect/token`,
+			`${env.KEYCLOAK_URL}/realms/${env.KEYCLOAK_REALM}/protocol/openid-connect/token`,
 			{
 				method: 'POST',
 				headers: {
@@ -31,12 +32,18 @@ export const handle: Handle = async ({ event, resolve }) => {
 					grant_type: 'urn:ietf:params:oauth:grant-type:uma-ticket',
 					audience: 'app',
 					client_id: 'app',
-					client_secret: 'Xj90IKNebTNlRkMNaoXjGO6MZbHkGvvv',
+					client_secret: env.KEYCLOAK_CLIENT_SECRET,
 					response_mode: 'permissions', 
 					subject_token: session.accessToken,
 				})
 			}
 		);
+
+		if (response.status !== 200) {
+			console.log("Invalid session token", response);
+		// 	deleteSessionTokenCookie(event);
+		// 	return resolve(event);
+		}
 	
 		setSessionTokenCookie(event, token, session.expiresAt);
 		if (response.status === 200)
@@ -44,7 +51,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		else
 			permissions = [];
 
-		console.log(permissions)
+		console.log("PERMISSIONS", permissions)
 
 		// permissions = [
 		// 	{

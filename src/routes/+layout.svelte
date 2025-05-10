@@ -7,6 +7,7 @@
 	<a class="hover:cursor-pointer hover:underline" href="/">Home</a>
 	<a class="hover:cursor-pointer hover:underline" href="/todos">Todos</a>
 	<a class="hover:cursor-pointer hover:underline" href="/checklists">Checklists</a>
+	<a class="hover:cursor-pointer hover:underline" href="/arm">ARM</a>
 	<span class="flex-grow"></span>
 	{#if data.user}
 		<form method="POST" action="/">
