@@ -52,6 +52,30 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - postgres
+  
+  grafana:
+    image: grafana/grafana:latest  # Use a specific version instead of latest
+    container_name: grafana
+    ports:
+      - "8500:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - pyroscope
+      
+  pyroscope:
+    image: grafana/pyroscope:latest  # Use a specific version
+    container_name: pyroscope
+    ports:
+      - "4040:4040"
+    environment:
+      PYROSCOPE_SERVER_ADDRESS: http://pyroscope:4040
+      PYROSCOPE_SERVER_AUTHENTICATION: basic
+      PYROSCOPE_SERVER_USERNAME: admin
+      PYROSCOPE_SERVER_PASSWORD: admin
+    command: server
+
+
 
 volumes:
   postgres_data:

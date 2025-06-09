@@ -1,0 +1,14 @@
+-- name: CreatePoll :one
+INSERT INTO polls (title, template_poll_id)
+VALUES ($1, $2)
+RETURNING id, title, template_poll_id;
+
+-- name: AssignUserToPoll :one
+INSERT INTO users_polls (user_id, poll_id, role)
+VALUES ($1, $2, $3)
+RETURNING user_id, poll_id, role;
+
+-- name: RemoveUserFromPoll :one
+DELETE FROM users_polls
+WHERE user_id = $1 AND poll_id = $2
+RETURNING user_id, poll_id;
