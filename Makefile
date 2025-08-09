@@ -5,7 +5,7 @@ swagger:
 
 swagger3:
 	@echo "Generating Swagger documentation for v3..."
-	@swag2op init --dir ./core --output ./core/api/docs
+	@swag2op init -g server.go --dir ./core/api --output ./core/api/docs
 
 sdk:
 	@echo "Generating SDK..."

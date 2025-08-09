@@ -46,6 +46,19 @@ func (q *Queries) CreatePoll(ctx context.Context, arg CreatePollParams) (Poll, e
 	return i, err
 }
 
+const deletePoll = `-- name: DeletePoll :one
+DELETE FROM polls
+WHERE id = $1
+RETURNING id, title, template_poll_id
+`
+
+func (q *Queries) DeletePoll(ctx context.Context, id int64) (Poll, error) {
+	row := q.db.QueryRow(ctx, deletePoll, id)
+	var i Poll
+	err := row.Scan(&i.ID, &i.Title, &i.TemplatePollID)
+	return i, err
+}
+
 const removeUserFromPoll = `-- name: RemoveUserFromPoll :one
 DELETE FROM users_polls
 WHERE user_id = $1 AND poll_id = $2
@@ -66,5 +79,25 @@ func (q *Queries) RemoveUserFromPoll(ctx context.Context, arg RemoveUserFromPoll
 	row := q.db.QueryRow(ctx, removeUserFromPoll, arg.UserID, arg.PollID)
 	var i RemoveUserFromPollRow
 	err := row.Scan(&i.UserID, &i.PollID)
+	return i, err
+}
+
+const updatePoll = `-- name: UpdatePoll :one
+UPDATE polls
+SET title = $1, template_poll_id = $2
+WHERE id = $3
+RETURNING id, title, template_poll_id
+`
+
+type UpdatePollParams struct {
+	Title          string
+	TemplatePollID int64
+	ID             int64
+}
+
+func (q *Queries) UpdatePoll(ctx context.Context, arg UpdatePollParams) (Poll, error) {
+	row := q.db.QueryRow(ctx, updatePoll, arg.Title, arg.TemplatePollID, arg.ID)
+	var i Poll
+	err := row.Scan(&i.ID, &i.Title, &i.TemplatePollID)
 	return i, err
 }

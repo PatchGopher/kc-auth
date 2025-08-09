@@ -1,0 +1,235 @@
+{
+    "components": {
+        "schemas": {
+            "api.CreatePollRequest": {
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "title",
+                    "user_id"
+                ],
+                "type": "object"
+            },
+            "api.PollResponse": {
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "role": {
+                        "type": "string"
+                    },
+                    "template_id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "contact": {},
+        "description": "This is the core API for Firepoll, a polling application.",
+        "license": {
+            "name": "GPL-3.0",
+            "url": "http://www.gnu.org/licenses/gpl-3.0.en.html"
+        },
+        "termsOfService": "http://swagger.io/terms/",
+        "title": "Firepoll Core API",
+        "version": "1.0"
+    },
+    "openapi": "3.0.3",
+    "paths": {
+        "/polls": {
+            "get": {
+                "description": "Retrieves a list of polls associated with the authenticated user",
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/api.PollResponse"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "List all polls for the authenticated user",
+                "tags": [
+                    "Polls"
+                ]
+            },
+            "post": {
+                "description": "Creates a new poll and associates it with the authenticated user",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/api.CreatePollRequest"
+                            }
+                        }
+                    },
+                    "description": "Poll data",
+                    "required": true,
+                    "x-originalParamName": "poll"
+                },
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.PollResponse"
+                                }
+                            }
+                        },
+                        "description": "Created"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Invalid request"
+                    },
+                    "401": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Create a new poll",
+                "tags": [
+                    "Polls"
+                ]
+            }
+        },
+        "/polls/{id}": {
+            "get": {
+                "description": "Retrieves a poll by its ID",
+                "parameters": [
+                    {
+                        "description": "Poll ID",
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/api.PollResponse"
+                                }
+                            }
+                        },
+                        "description": "OK"
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Poll not found"
+                    },
+                    "500": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "Internal Server Error"
+                    }
+                },
+                "summary": "Get a specific poll by ID",
+                "tags": [
+                    "Polls"
+                ]
+            }
+        }
+    },
+    "servers": [
+        {
+            "url": "https://localhost:8200/"
+        }
+    ]
+}

@@ -41,6 +41,24 @@ func (q *Queries) FindPollForUser(ctx context.Context, arg FindPollForUserParams
 	return i, err
 }
 
+const getUserRoleForPoll = `-- name: GetUserRoleForPoll :one
+SELECT up.role
+FROM users_polls up
+WHERE up.user_id = $1 AND up.poll_id = $2
+`
+
+type GetUserRoleForPollParams struct {
+	UserID int64
+	PollID int64
+}
+
+func (q *Queries) GetUserRoleForPoll(ctx context.Context, arg GetUserRoleForPollParams) (Role, error) {
+	row := q.db.QueryRow(ctx, getUserRoleForPoll, arg.UserID, arg.PollID)
+	var role Role
+	err := row.Scan(&role)
+	return role, err
+}
+
 const listPollsForUser = `-- name: ListPollsForUser :many
 SELECT p.id, p.title, p.template_poll_id,
        up.role

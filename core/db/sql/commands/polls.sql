@@ -12,3 +12,14 @@ RETURNING user_id, poll_id, role;
 DELETE FROM users_polls
 WHERE user_id = $1 AND poll_id = $2
 RETURNING user_id, poll_id;
+
+-- name: DeletePoll :one
+DELETE FROM polls
+WHERE id = $1
+RETURNING id, title, template_poll_id;
+
+-- name: UpdatePoll :one
+UPDATE polls
+SET title = $1, template_poll_id = $2
+WHERE id = $3
+RETURNING id, title, template_poll_id; 
